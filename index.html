@@ -1,36 +1,26 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
     <meta charset="utf-8">
-
-    <title>AR Testing</title>
-
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>Shape Explorer</title>
+    <link rel="stylesheet" href="Style.css">
 </head>
-
-<body style="margin:0; overflow:hidden;">
-
-    <a-scene
-        embedded
-        arjs="sourceType: webcam;">
-
-        <a-marker preset="hiro">
-
-            <a-box
-                position="0 0.5 0"
-                color="red">
-            </a-box>
-
-        </a-marker>
-
-        <a-entity camera></a-entity>
-
-    </a-scene>
-
+<body data-page="home">
+    <nav id="navbar"></nav>
+    <main class="page">
+        <h1>Shape Explorer</h1>
+        <p class="intro">
+            Welcome! Shape Explorer is an augmented reality learning tool that lets you
+            point your camera at a marker and see 3D shapes come to life. Pick your grade
+            range below to explore shapes up close and play a couple of shape-matching
+            games along the way.
+        </p>
+        <div class="button-stack">
+            <a class="big-button" href="K4.html">K-4</a>
+            <a class="big-button" href="Grade56.html">5-6</a>
+        </div>
+    </main>
+    <script src="App.js"></script>
 </body>
-
 </html>

@@ -1,0 +1,296 @@
+/* -----------------------------------------------------------
+   Shapes.css
+   Styles for the "shape exploration" feature: the top
+   game-button row, the expandable shape card list on grade
+   landing pages (K4.html, Grade56.html), and the per-shape
+   lesson page (Lesson.html). Loaded alongside Style.css, which
+   still owns global page layout, nav, and .big-button base
+   styles.
+
+   Combines what used to be Cards.css + Lesson.css, since the
+   lesson page reuses the card action-button styles directly.
+----------------------------------------------------------- */
+
+/* ---------- Shared game-button row (K4.html / Grade56.html) ---------- */
+
+.button-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 12px;
+    justify-content: center;
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 28px;
+}
+
+.button-row .big-button {
+    flex: 1;
+    font-size: 15px;
+    padding: 14px 8px;
+    min-height: 52px;
+}
+
+/* ---------- Shape card list (K4.html / Grade56.html) ---------- */
+
+.shape-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 420px;
+}
+
+.shape-card {
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    text-align: left;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.shape-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 18px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.shape-card-header:focus-visible {
+    outline: 3px solid #2b6cb0;
+    outline-offset: -3px;
+}
+
+.shape-card-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+
+.shape-card-name {
+    flex: 1;
+    font-size: 21px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.voice-button {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #eef2ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.voice-button:hover,
+.voice-button:focus-visible {
+    background: #dbe4ff;
+    transform: scale(1.06);
+    outline: none;
+}
+
+.shape-card-chevron {
+    flex-shrink: 0;
+    font-size: 16px;
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.shape-card.expanded .shape-card-chevron {
+    transform: rotate(180deg);
+}
+
+.shape-card-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.22s ease;
+}
+
+.shape-card-body > * {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.shape-card.expanded .shape-card-body {
+    grid-template-rows: 1fr;
+}
+
+.shape-card-body .shape-card-hint,
+.shape-card-body .shape-card-actions {
+    padding: 0 20px;
+}
+
+.shape-card-hint {
+    color: #64748b;
+    font-size: 15px;
+    margin: 0;
+}
+
+.shape-card.expanded .shape-card-hint {
+    padding-top: 2px;
+    padding-bottom: 12px;
+}
+
+.shape-card.expanded .shape-card-actions {
+    padding-bottom: 20px;
+}
+
+.shape-card-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* ---------- Shared action-button styles (cards + lesson page) ---------- */
+
+.card-action-button {
+    flex: 1;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: transform 0.1s ease;
+}
+
+.card-action-button:active {
+    transform: translateY(2px);
+}
+
+.ar-button {
+    background: #2b6cb0;
+    color: white;
+}
+
+.learn-button {
+    background: #fff8dc;
+    color: #8a6d00;
+}
+
+@media (max-width: 340px) {
+    .shape-card-name {
+        font-size: 17px;
+    }
+
+    .button-row .big-button {
+        font-size: 13px;
+        padding: 12px 6px;
+    }
+}
+
+/* ---------- Lesson page (Lesson.html) ---------- */
+
+body[data-page="lesson"] .page {
+    align-items: stretch;
+    padding-top: 20px;
+}
+
+#lesson-content {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.lesson-hero {
+    border-radius: 20px 20px 0 0;
+    padding: 40px 28px 28px;
+    text-align: center;
+    color: white;
+}
+
+.lesson-hero h1 {
+    margin: 0 0 8px;
+    font-size: 36px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.lesson-tagline {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    opacity: 0.95;
+}
+
+.lesson-card {
+    background: white;
+    color: #1f2937;
+    border-radius: 0 0 20px 20px;
+    padding: 28px;
+    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.15);
+    text-align: left;
+}
+
+.lesson-card p {
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 0 0 16px;
+}
+
+.lesson-fact {
+    background: #fff8dc;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin: 8px 0 20px;
+}
+
+.lesson-fact-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #8a6d00;
+    margin-bottom: 6px;
+}
+
+.lesson-fact p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.lesson-subheading {
+    font-size: 18px;
+    margin: 0 0 10px;
+}
+
+.lesson-examples {
+    margin: 0 0 24px;
+    padding-left: 22px;
+}
+
+.lesson-examples li {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.lesson-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lesson-actions .card-action-button {
+    flex: 1;
+    min-width: 160px;
+}
+
+.lesson-missing {
+    padding: 28px;
+    font-size: 17px;
+    text-align: center;
+}
