@@ -17,9 +17,6 @@ function renderNavbar() {
     }).join('');
 }
 
-// NOTE: shape data (SHAPES, getShapeTexture, getShapeBySlug) now lives in
-// shapes-data.js, which must be loaded before this file.
-
 let currentShapeIndex = 0;
 let textureMode = false;
 let arLayerObserver = null;
@@ -279,6 +276,7 @@ function initExploreMode() {
 
     // If we were sent here from a shape card (Explore.html?shape=cone),
     // open Explore Mode with that shape already selected.
+    // TO DO: URL should be more professional eg /K4Activies/Explore/Cone 
     const params = new URLSearchParams(window.location.search);
     const requestedShape = params.get('shape');
     if (requestedShape) {

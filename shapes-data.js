@@ -1,11 +1,3 @@
-// -----------------------------------------------------------
-// shapes-data.js
-// Single source of truth for shape metadata. Used by:
-//   - Cards.js   (K-4 / Grade 5-6 shape card lists)
-//   - App.js     (Explore.html AR rendering)
-//   - Lesson.js  (per-shape lesson pages)
-// -----------------------------------------------------------
-
 const SHAPES = [
     {
         slug: 'cone',
