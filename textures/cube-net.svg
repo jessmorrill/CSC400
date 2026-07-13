@@ -1,0 +1,27 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .face { fill: #2ecc71; fill-opacity: 0.55; stroke: none; }
+    .cut { fill: none; stroke: #14532d; stroke-width: 5; stroke-linejoin: round; }
+    .fold { stroke: #14532d; stroke-width: 2.5; stroke-dasharray: 8 6; opacity: 0.8; }
+  </style>
+
+  <!-- 6 individual face fills -->
+  <rect class="face" x="76"  y="196" width="90" height="90"/>
+  <rect class="face" x="166" y="196" width="90" height="90"/>
+  <rect class="face" x="256" y="196" width="90" height="90"/>
+  <rect class="face" x="346" y="196" width="90" height="90"/>
+  <rect class="face" x="166" y="106" width="90" height="90"/>
+  <rect class="face" x="166" y="286" width="90" height="90"/>
+
+  <!-- outer cut outline -->
+  <path class="cut" d="
+    M166,106 L256,106 L256,196 L436,196 L436,286 L256,286
+    L256,376 L166,376 L166,286 L76,286 L76,196 L166,196 Z" />
+
+  <!-- fold lines between adjacent faces -->
+  <line class="fold" x1="166" y1="196" x2="166" y2="286"/>
+  <line class="fold" x1="256" y1="196" x2="256" y2="286"/>
+  <line class="fold" x1="346" y1="196" x2="346" y2="286"/>
+  <line class="fold" x1="166" y1="196" x2="256" y2="196"/>
+  <line class="fold" x1="166" y1="286" x2="256" y2="286"/>
+</svg>

@@ -1,0 +1,33 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .base  { fill: #f1c40f; fill-opacity: 0.55; }
+    .tri   { fill: #fbd34d; fill-opacity: 0.55; }
+    .cut   { fill: none; stroke: #7a5b00; stroke-width: 5; stroke-linejoin: round; }
+    .fold  { stroke: #7a5b00; stroke-width: 2.5; stroke-dasharray: 8 6; opacity: 0.8; }
+  </style>
+
+  <!-- Scaled exactly to the model: geometry is
+       'radiusBottom: 0.65; height: 1; segmentsRadial: 4' (a square
+       base inscribed in a circle of radius 0.65).
+       base side = 0.65*sqrt(2) = 0.9192 units
+       apothem   = side/2        = 0.4596 units
+       slant height (apex to base-edge midpoint)
+                 = sqrt(1^2 + 0.4596^2) = 1.1006 units
+       At 157.03 px/unit: half-side = 72.18px, slant = 172.82px -->
+
+  <rect class="base" x="183.82" y="183.82" width="144.36" height="144.36"/>
+
+  <polygon class="tri" points="183.82,183.82 328.18,183.82 256,11.00"/>
+  <polygon class="tri" points="328.18,183.82 328.18,328.18 501.00,256"/>
+  <polygon class="tri" points="328.18,328.18 183.82,328.18 256,501.00"/>
+  <polygon class="tri" points="183.82,328.18 183.82,183.82 11.00,256"/>
+
+  <path class="cut" d="
+    M256,11.00 L328.18,183.82 L501.00,256 L328.18,328.18
+    L256,501.00 L183.82,328.18 L11.00,256 L183.82,183.82 Z" />
+
+  <line class="fold" x1="183.82" y1="183.82" x2="328.18" y2="183.82"/>
+  <line class="fold" x1="328.18" y1="183.82" x2="328.18" y2="328.18"/>
+  <line class="fold" x1="328.18" y1="328.18" x2="183.82" y2="328.18"/>
+  <line class="fold" x1="183.82" y1="328.18" x2="183.82" y2="183.82"/>
+</svg>

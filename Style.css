@@ -50,6 +50,57 @@ body.ar-body {
     height: 100dvh;
 }
 
+/* 5-6 buttons sit stacked under the K-4 texture button's spot;
+   only one set is ever visible per grade (display toggled in JS). */
+#btn-skeleton-toggle {
+    top: 20px;
+    right: 20px;
+    font-size: 15px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#btn-skeleton-toggle.on {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+#btn-net-toggle {
+    top: 72px;
+    right: 20px;
+    font-size: 15px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#btn-net-toggle.on {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+.skeleton-note {
+    top: 128px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(88vw, 340px);
+    text-align: center;
+    color: white;
+    background: rgba(15, 23, 42, 0.78);
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.4;
+    border-radius: 16px;
+    z-index: 998;
+}
+
 #ar-scene, .a-canvas {
     width: 100vw !important;
     height: 100vh !important;

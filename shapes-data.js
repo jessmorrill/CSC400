@@ -91,3 +91,22 @@ function getShapeTexture(key) {
 function getShapeBySlug(slug) {
     return SHAPES.find(shape => shape.slug === slug) || null;
 }
+
+const NET_TEXTURE_URLS = {
+    cube: 'textures/cube-net.svg',
+    pyramid: 'textures/pyramid-net.svg',
+    prism: 'textures/prism-net.svg',
+    cone: 'textures/cone-net.svg',
+    cylinder: 'textures/cylinder-net.svg'
+};
+
+const netTextureCache = {};
+
+function getNetTexture(slug) {
+    if (slug === 'sphere') return null;
+    if (netTextureCache[slug]) return netTextureCache[slug];
+    const url = NET_TEXTURE_URLS[slug];
+    if (!url) return null;
+    netTextureCache[slug] = url;
+    return url;
+}

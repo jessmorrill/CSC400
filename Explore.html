@@ -13,7 +13,16 @@
     <div id="ar-container"></div>
 
     <button id="btn-back" class="ar-ui">&larr; Back</button>
-    <button id="btn-texture-toggle" class="ar-ui" onclick="toggleTexture()">Show Object</button>
+
+    <!-- K-4 only. Untouched. -->
+    <button id="btn-texture-toggle" class="ar-ui">Show Object</button>
+
+    <!-- 5-6 only. Two separate buttons, two separate toggles. -->
+    <button id="btn-skeleton-toggle" class="ar-ui grade56-ui">Show Skeleton</button>
+    <button id="btn-net-toggle" class="ar-ui grade56-ui">Show Net</button>
+
+    <div id="skeleton-note" class="ar-ui skeleton-note" hidden></div>
+
     <div class="ar-ui shape-nav">
         <button class="arrow-btn" onclick="changeShape(-1)">&#8592;</button>
         <div id="shape-label">Cone</div>

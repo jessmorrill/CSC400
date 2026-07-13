@@ -1,0 +1,20 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .rect  { fill: #06b6d4; fill-opacity: 0.55; stroke: #0e5a66; stroke-width: 5; stroke-linejoin: round; }
+    .circ  { fill: #4fd8ee; fill-opacity: 0.55; stroke: #0e5a66; stroke-width: 5; }
+    .fold  { stroke: #0e5a66; stroke-width: 2.5; stroke-dasharray: 8 6; opacity: 0.8; }
+  </style>
+
+  <!-- Scaled exactly to the model (radius: 0.42, height: 0.5):
+       circumference = 2*pi*0.42 = 2.63894 units -> rectangle width
+       height = 0.5 units -> rectangle height
+       At 150 px/unit: rect 395.84 x 75px, circle radius = 63px -->
+
+  <rect class="rect" x="58.08" y="218.5" width="395.84" height="75"/>
+
+  <circle class="circ" cx="256" cy="155.5" r="63"/>
+  <circle class="circ" cx="256" cy="356.5" r="63"/>
+
+  <line class="fold" x1="58.08"  y1="218.5" x2="453.92" y2="218.5"/>
+  <line class="fold" x1="58.08"  y1="293.5" x2="453.92" y2="293.5"/>
+</svg>
