@@ -1,19 +1,50 @@
-// -----------------------------------------------------------
-// Cards.js
-// Renders the shape-card list on grade landing pages (K4.html,
-// and Grade56.html in the future). Depends on SHAPES /
-// getShapeTexture from shapes-data.js.
-// -----------------------------------------------------------
+let currentAudio = null;
+let currentButton = null;
 
-/**
- * Placeholder for the future "read the shape name aloud" feature.
- * Intentionally does nothing yet — wiring up a text-to-speech / audio
- * reader is a separate task. Keeping this as its own named function
- * means that future work only has to touch one place.
- */
+function stopCurrentAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+    if (currentButton) {
+        currentButton.classList.remove('playing');
+    }
+    currentAudio = null;
+    currentButton = null;
+}
 function handleVoiceButtonClick(event, shape) {
     event.stopPropagation(); // don't let the click also expand/collapse the card
-    // TODO: hook up a reader (e.g. SpeechSynthesis or a recorded clip) here.
+
+    const button = event.currentTarget;
+    const audio = getShapeAudio(shape.textureKey);
+    if (!audio) return; // no clip recorded for this shape yet
+
+    // Tapping the same button again while it's talking just stops it.
+    if (currentAudio === audio && !audio.paused) {
+        stopCurrentAudio();
+        return;
+    }
+
+    stopCurrentAudio(); // stop any other clip that might be playing
+
+    currentAudio = audio;
+    currentButton = button;
+    button.classList.add('playing');
+
+    audio.volume = 1;
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+        console.warn(`Couldn't play audio for ${shape.slug}:`, err);
+        button.classList.remove('playing');
+        currentAudio = null;
+        currentButton = null;
+    });
+
+    audio.onended = () => {
+        button.classList.remove('playing');
+        currentAudio = null;
+        currentButton = null;
+    };
 }
 
 function buildShapeCard(shape, grade) {

@@ -1,17 +1,3 @@
-/* -----------------------------------------------------------
-   Shapes.css
-   Styles for the "shape exploration" feature: the top
-   game-button row, the expandable shape card list on grade
-   landing pages (K4.html, Grade56.html), and the per-shape
-   lesson page (Lesson.html). Loaded alongside Style.css, which
-   still owns global page layout, nav, and .big-button base
-   styles.
-
-   Combines what used to be Cards.css + Lesson.css, since the
-   lesson page reuses the card action-button styles directly.
------------------------------------------------------------ */
-
-/* ---------- Shared game-button row (K4.html / Grade56.html) ---------- */
 
 .button-row {
     display: flex;
@@ -84,6 +70,7 @@
 }
 
 .voice-button {
+    position: relative;
     flex-shrink: 0;
     width: 38px;
     height: 38px;
@@ -102,6 +89,31 @@
     background: #dbe4ff;
     transform: scale(1.06);
     outline: none;
+}
+
+/* ---------- Voice button "playing" state ----------
+   A simple, friendly cue while a shape-name clip is playing:
+   the button turns green and bounces gently up and down. */
+
+.voice-button.playing {
+    background: #34d399;
+    animation: voice-bounce 0.5s ease-in-out infinite;
+}
+
+@keyframes voice-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .voice-button.playing {
+        animation: none;
+        background: #34d399;
+    }
 }
 
 .shape-card-chevron {
