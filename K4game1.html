@@ -317,10 +317,7 @@
 
 <script src="App.js"></script>
     <script>
-        // -----------------------------------------------------------
-        // Shape data: display name, brand color (matches shapes-data.js),
-        // and a hand-drawn pseudo-3D wireframe SVG
-        // -----------------------------------------------------------
+
         const SHAPE_INFO = {
             cone: {
                 name: 'Cone',
@@ -389,31 +386,29 @@
             return `<svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">${info.svg(info.color)}</svg>`;
         }
 
-        // -----------------------------------------------------------
-        // Fixed question banks.
-        // -----------------------------------------------------------
+
         const MATCH_QUESTIONS = [
             { type: 'identify', shape: 'cone', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['cone', 'sphere', 'pyramid'] },
-            { type: 'select', shape: 'sphere', promptText: 'Click on the sphere.', audio: 'audio/selectSphere.mp3', options: ['sphere', 'cube'] },
+            { type: 'select', shape: 'sphere', promptText: 'Which of these pictures is a sphere?', audio: 'audio/selectSphere.mp3', options: ['sphere', 'cube'] },
             { type: 'identify', shape: 'cube', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['cube', 'cylinder', 'prism'] },
-            { type: 'select', shape: 'cylinder', promptText: 'Click on the cylinder.', audio: 'audio/selectCylinder.mp3', options: ['cylinder', 'pyramid'] },
+            { type: 'select', shape: 'cylinder', promptText: 'Which of these pictures is a cylinder?', audio: 'audio/selectCylinder.mp3', options: ['cylinder', 'pyramid'] },
             { type: 'identify', shape: 'pyramid', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['pyramid', 'cone', 'cube'] },
-            { type: 'select', shape: 'prism', promptText: 'Click on the triangular prism.', audio: 'audio/selectPrism.mp3', options: ['prism', 'cone'] },
-            { type: 'select', shape: 'cone', promptText: 'Click on the cone.', audio: 'audio/selectCone.mp3', options: ['cone', 'cylinder'] },
+            { type: 'select', shape: 'prism', promptText: 'Which of these pictures is a triangular prism?', audio: 'audio/selectPrism.mp3', options: ['prism', 'cone'] },
+            { type: 'select', shape: 'cone', promptText: 'Which of these pictures is a cone?', audio: 'audio/selectCone.mp3', options: ['cone', 'cylinder'] },
             { type: 'identify', shape: 'sphere', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['sphere', 'cylinder', 'prism'] },
-            { type: 'select', shape: 'cube', promptText: 'Click on the cube.', audio: 'audio/selectCube.mp3', options: ['cube', 'prism'] },
+            { type: 'select', shape: 'cube', promptText: 'Which of these pictures is a cube?', audio: 'audio/selectCube.mp3', options: ['cube', 'prism'] },
             { type: 'identify', shape: 'cylinder', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['cylinder', 'cube', 'cone'] },
-            { type: 'select', shape: 'pyramid', promptText: 'Click on the pyramid.', audio: 'audio/selectPyramid.mp3', options: ['pyramid', 'sphere'] },
+            { type: 'select', shape: 'pyramid', promptText: 'Which of these pictures is a pyramid?', audio: 'audio/selectPyramid.mp3', options: ['pyramid', 'sphere'] },
             { type: 'identify', shape: 'prism', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['prism', 'pyramid', 'sphere'] }
         ];
 
         const PROPERTY_QUESTIONS = [
-            { type: 'select', shape: 'sphere', promptText: 'Which shape is perfectly round like a ball and can roll in any direction?', audio: 'audio/rollDownHill.mp3', options: ['sphere', 'cube'] },
-            { type: 'select', shape: 'cube', promptText: 'Which shape looks like a box and has 6 flat square faces?', audio: 'audio/sixFlatFaces.mp3', options: ['cube', 'sphere'] },
+            { type: 'select', shape: 'sphere', promptText: 'What shape is round like a ball and can roll down a hill?', audio: 'audio/rollDownHill.mp3', options: ['sphere', 'cube'] },
+            { type: 'select', shape: 'cube', promptText: 'Which shape looks like a box and has 6 sides?', audio: 'audio/sixFlatFaces.mp3', options: ['cube', 'sphere'] },
             { type: 'select', shape: 'cone', promptText: 'Which shape has a flat circle bottom and a pointy tip like an ice cream cone?', audio: 'audio/onePointyTip.mp3', options: ['cone', 'cylinder'] },
             { type: 'select', shape: 'cylinder', promptText: 'Which shape looks like a soup can, has 2 flat circle faces, and can roll on its curved side?', audio: 'audio/twoFlatCircles.mp3', options: ['cylinder', 'cube'] },
-            { type: 'select', shape: 'pyramid', promptText: 'Which shape has a flat square bottom and 4 triangle sides that meet at a sharp point at the top?', audio: 'audio/pointyTriangleSides.mp3', options: ['pyramid', 'prism'] },
-            { type: 'select', shape: 'prism', promptText: 'Which shape looks like a camping tent, with a triangle on each end and flat rectangles connecting them?', audio: 'audio/triangleEnds.mp3', options: ['prism', 'pyramid'] }
+            { type: 'select', shape: 'pyramid', promptText: 'Which shape has 4 triangle sides that meet at a sharp point at the top?', audio: 'audio/pointyTriangleSides.mp3', options: ['pyramid', 'prism'] },
+            { type: 'select', shape: 'prism', promptText: 'Which shape looks like a camping tent, with two triangle ends and rectangles between them?', audio: 'audio/triangleEnds.mp3', options: ['prism', 'pyramid'] }
         ];
 
         const QUESTION_BANKS = {
@@ -421,7 +416,6 @@
             property: PROPERTY_QUESTIONS
         };
 
-        // Fisher-Yates shuffle algorithm
         function shuffle(list) {
             const copy = list.slice();
             for (let i = copy.length - 1; i > 0; i--) {
@@ -440,29 +434,24 @@
         let activeAudio = null;
         let activeAudioKey = null;
 
-        // Central function to cleanly boot up or reset the quiz
         function startQuiz(mode) {
             currentMode = mode;
             
-            // 1. Fetch questions, duplicate them safely, and shuffle them freshly right now
             activeQuestions = shuffle(QUESTION_BANKS[currentMode]);
             
-            // 2. Reset indices and clear out past state answers completely
             currentIndex = 0;
             answers = new Array(activeQuestions.length).fill(null);
             
-            // 3. Clear existing audio loops
             if (activeAudio) {
                 activeAudio.pause();
                 activeAudio = null;
                 activeAudioKey = null;
             }
 
-            // 4. Reset UI container displays
             document.getElementById('quiz-results-view').style.display = 'none';
             document.getElementById('quiz-question-view').style.display = 'block';
             
-            // 5. Draw first question frame
+
             render();
         }
 
@@ -633,7 +622,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof renderNavbar === 'function') renderNavbar();
-            // Start the quiz dynamically right out of the gate
             startQuiz('match');
         });
     </script>
