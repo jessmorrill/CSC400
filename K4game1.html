@@ -1,40 +1,531 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Print Hiro Marker - Shape Explorer</title>
-    <link rel="stylesheet" href="Style.css">
+    <meta charset="UTF-8" />
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>Choose the Correct Shape</title>
+
+    <link rel="stylesheet" href="Style.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0b0b;
+            color: #1f2937;
+        }
+
+        .game-page {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .game-header {
+            background: rgb(5, 5, 5);
+            padding: 24px;
+            border-radius: 18px;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .game-header h1 {
+            margin-top: 0;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 16px;
+            font-weight: bold;
+        }
+
+        .difficulty-buttons {
+            margin-top: 18px;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .difficulty-button {
+            background: #dbeafe;
+            color: #1e3a8a;
+            margin: 5px;
+        }
+
+        .difficulty-button.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        #question {
+            font-size: 26px;
+            margin: 25px 0;
+        }
+
+        .shape-options {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(180px, 1fr));
+            gap: 25px;
+        }
+
+        .shape-card {
+            background: white;
+            border: 4px solid transparent;
+            border-radius: 20px;
+            min-height: 260px;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .shape-card:hover {
+            transform: scale(1.03);
+            border-color: #60a5fa;
+        }
+
+        .shape-name {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            min-height: 45px;
+            font-size: 22px;
+            font-weight: bold;
+            margin: 24px 0;
+        }
+
+        .correct-message {
+            color: #e5ece7;
+        }
+
+        .incorrect-message {
+            color: #dc2626;
+        }
+
+        #nextButton {
+            background: #2563eb;
+            color: white;
+            display: none;
+            margin: auto;
+        }
+
+        .shape {
+            position: relative;
+        }
+
+        .cube {
+            width: 115px;
+            height: 115px;
+            background: #60a5fa;
+            border: 5px solid #1d4ed8;
+            box-shadow: 14px 14px 0 #93c5fd;
+        }
+
+        .sphere {
+            width: 125px;
+            height: 125px;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle at 35% 30%,
+                #ffffff,
+                #f472b6 30%,
+                #be185d 85%
+            );
+        }
+
+        .cone {
+            width: 0;
+            height: 0;
+            border-left: 65px solid transparent;
+            border-right: 65px solid transparent;
+            border-top: 145px solid #f59e0b;
+            border-radius: 50%;
+        }
+
+        .cylinder {
+            width: 105px;
+            height: 145px;
+            background: #34d399;
+            border-radius: 50% / 14%;
+            border: 4px solid #047857;
+        }
+
+        .rectangular-prism {
+            width: 145px;
+            height: 90px;
+            background: #a78bfa;
+            border: 5px solid #6d28d9;
+            box-shadow: 14px 14px 0 #c4b5fd;
+        }
+
+        .pyramid {
+            width: 0;
+            height: 0;
+            border-left: 75px solid transparent;
+            border-right: 75px solid transparent;
+            border-bottom: 145px solid #fb7185;
+        }
+
+        @media (max-width: 600px) {
+            .shape-options {
+                grid-template-columns: 1fr;
+            }
+
+            #question {
+                font-size: 22px;
+            }
+
+            .shape-card {
+                min-height: 220px;
+            }
+        }
+    </style>
 </head>
-<body data-page="print-marker">
-    <nav id="navbar"></nav>
 
-    <main class="page">
-        <h1>Print the Hiro Marker</h1>
-        <p class="intro">
-            Explore Mode uses this "Hiro" marker to know where to place the 3D shape.
-            Print this image on plain paper (it works in black &amp; white) and point your
-            camera at it while in Explore Mode.
-        </p>
+<body>
+    <main class="game-page">
+        <section class="game-header">
+            <h1>Choose the Correct Shape</h1>
 
-        <div class="marker-preview">
-            <img src="https://raw.githubusercontent.com/jeromeetienne/AR.js/master/data/images/hiro.png"
-                 alt="Hiro AR marker pattern">
-        </div>
+            <p>
+                Read the question and press the correct 3D shape.
+            </p>
 
-        <div class="button-stack">
-            <a class="big-button secondary"
-               href="https://github.com/jeromeetienne/AR.js/blob/master/data/images/hiro.png"
-               target="_blank" rel="noopener">
-               Open Full-Size Image
-            </a>
-        </div>
-        <p class="intro" style="margin-top: 20px; font-size: 14px;">
-            Tip: for best tracking, print it so the black border fills most of the page and
-            keep the paper flat and well-lit.
-        </p>
+            <div class="difficulty-buttons">
+                <button
+                    id="easyButton"
+                    class="difficulty-button active"
+                    type="button"
+                >
+                    Easy Mode
+                </button>
+
+                <button
+                    id="hardButton"
+                    class="difficulty-button"
+                    type="button"
+                >
+                    Hard Mode
+                </button>
+            </div>
+
+            <div class="game-info">
+                <span>
+                    Score:
+                    <strong id="score">0</strong>
+                </span>
+
+                <span>
+                    Question:
+                    <strong id="questionNumber">1</strong>/10
+                </span>
+            </div>
+        </section>
+
+        <h2 id="question">Press on the cube.</h2>
+
+        <section class="shape-options">
+            <button
+                id="firstShapeCard"
+                class="shape-card"
+                type="button"
+            >
+                <div id="firstShape" class="shape cube"></div>
+                <div id="firstShapeName" class="shape-name">Cube</div>
+            </button>
+
+            <button
+                id="secondShapeCard"
+                class="shape-card"
+                type="button"
+            >
+                <div id="secondShape" class="shape sphere"></div>
+                <div id="secondShapeName" class="shape-name">Sphere</div>
+            </button>
+        </section>
+
+        <div id="feedback" class="feedback"></div>
+
+        <button id="nextButton" type="button">
+            Next Question
+        </button>
     </main>
 
-    <script src="App.js"></script>
+    <script>
+        const shapes = [
+            {
+                name: "Cube",
+                className: "cube",
+                properties: [
+                    "Which shape has 6 equal square faces?",
+                    "Which shape cannot roll and has 8 vertices?"
+                ]
+            },
+            {
+                name: "Sphere",
+                className: "sphere",
+                properties: [
+                    "Which shape can roll in every direction?",
+                    "Which shape has no edges and no vertices?"
+                ]
+            },
+            {
+                name: "Cone",
+                className: "cone",
+                properties: [
+                    "Which shape has one circular base and one vertex?",
+                    "Which shape can roll in a circle?"
+                ]
+            },
+            {
+                name: "Cylinder",
+                className: "cylinder",
+                properties: [
+                    "Which shape has two circular faces?",
+                    "Which shape can roll and also stand upright?"
+                ]
+            },
+            {
+                name: "Rectangular Prism",
+                className: "rectangular-prism",
+                properties: [
+                    "Which shape looks like a box?",
+                    "Which shape has rectangular faces and 8 vertices?"
+                ]
+            },
+            {
+                name: "Pyramid",
+                className: "pyramid",
+                properties: [
+                    "Which shape has triangular faces that meet at one point?",
+                    "Which shape has a base and one top vertex?"
+                ]
+            }
+        ];
+
+        const totalQuestions = 10;
+
+        let score = 0;
+        let currentQuestion = 1;
+        let correctShape = null;
+        let difficulty = "easy";
+        let answered = false;
+
+        const questionElement = document.getElementById("question");
+        const scoreElement = document.getElementById("score");
+        const questionNumberElement =
+            document.getElementById("questionNumber");
+
+        const firstShapeCard =
+            document.getElementById("firstShapeCard");
+
+        const secondShapeCard =
+            document.getElementById("secondShapeCard");
+
+        const firstShape = document.getElementById("firstShape");
+        const secondShape = document.getElementById("secondShape");
+
+        const firstShapeName =
+            document.getElementById("firstShapeName");
+
+        const secondShapeName =
+            document.getElementById("secondShapeName");
+
+        const feedbackElement =
+            document.getElementById("feedback");
+
+        const nextButton =
+            document.getElementById("nextButton");
+
+        const easyButton =
+            document.getElementById("easyButton");
+
+        const hardButton =
+            document.getElementById("hardButton");
+
+        function getRandomItem(array) {
+            const randomIndex = Math.floor(Math.random() * array.length);
+            return array[randomIndex];
+        }
+
+        function getTwoDifferentShapes() {
+            const first = getRandomItem(shapes);
+            let second = getRandomItem(shapes);
+
+            while (second.name === first.name) {
+                second = getRandomItem(shapes);
+            }
+
+            return [first, second];
+        }
+
+        function updateShapeCard(
+            shapeElement,
+            nameElement,
+            shapeData
+        ) {
+            shapeElement.className = `shape ${shapeData.className}`;
+            nameElement.textContent = shapeData.name;
+        }
+
+        function createQuestion() {
+            answered = false;
+            feedbackElement.textContent = "";
+            feedbackElement.className = "feedback";
+            nextButton.style.display = "none";
+
+            firstShapeCard.disabled = false;
+            secondShapeCard.disabled = false;
+
+            const [shapeOne, shapeTwo] = getTwoDifferentShapes();
+            const displayedShapes = [shapeOne, shapeTwo];
+
+            correctShape = getRandomItem(displayedShapes);
+
+            updateShapeCard(
+                firstShape,
+                firstShapeName,
+                shapeOne
+            );
+
+            updateShapeCard(
+                secondShape,
+                secondShapeName,
+                shapeTwo
+            );
+
+            firstShapeCard.dataset.shapeName = shapeOne.name;
+            secondShapeCard.dataset.shapeName = shapeTwo.name;
+
+            if (difficulty === "easy") {
+                questionElement.textContent =
+                    `Press on the ${correctShape.name}.`;
+            } else {
+                questionElement.textContent =
+                    getRandomItem(correctShape.properties);
+            }
+        }
+
+        function checkAnswer(selectedName) {
+            if (answered) {
+                return;
+            }
+
+            answered = true;
+
+            firstShapeCard.disabled = true;
+            secondShapeCard.disabled = true;
+
+            if (selectedName === correctShape.name) {
+                score += 1;
+                scoreElement.textContent = score;
+
+                feedbackElement.textContent =
+                    "Correct! Great job!";
+
+                feedbackElement.className =
+                    "feedback correct-message";
+            } else {
+                feedbackElement.textContent =
+                    `Not quite. The correct answer was ${correctShape.name}.`;
+
+                feedbackElement.className =
+                    "feedback incorrect-message";
+            }
+
+            nextButton.style.display = "block";
+        }
+
+        function finishGame() {
+            document.querySelector(".shape-options").style.display =
+                "none";
+
+            nextButton.style.display = "none";
+
+            questionElement.textContent = "Game Complete!";
+
+            feedbackElement.textContent =
+                `You scored ${score} out of ${totalQuestions}.`;
+
+            feedbackElement.className =
+                "feedback correct-message";
+        }
+
+        function nextQuestion() {
+            if (currentQuestion >= totalQuestions) {
+                finishGame();
+                return;
+            }
+
+            currentQuestion += 1;
+            questionNumberElement.textContent = currentQuestion;
+            createQuestion();
+        }
+
+        function changeDifficulty(newDifficulty) {
+            difficulty = newDifficulty;
+
+            easyButton.classList.toggle(
+                "active",
+                difficulty === "easy"
+            );
+
+            hardButton.classList.toggle(
+                "active",
+                difficulty === "hard"
+            );
+
+            score = 0;
+            currentQuestion = 1;
+
+            scoreElement.textContent = score;
+            questionNumberElement.textContent = currentQuestion;
+
+            document.querySelector(".shape-options").style.display =
+                "grid";
+
+            createQuestion();
+        }
+
+        firstShapeCard.addEventListener("click", function () {
+            checkAnswer(firstShapeCard.dataset.shapeName);
+        });
+
+        secondShapeCard.addEventListener("click", function () {
+            checkAnswer(secondShapeCard.dataset.shapeName);
+        });
+
+        nextButton.addEventListener("click", nextQuestion);
+
+        easyButton.addEventListener("click", function () {
+            changeDifficulty("easy");
+        });
+
+        hardButton.addEventListener("click", function () {
+            changeDifficulty("hard");
+        });
+
+        createQuestion();
+    </script>
 </body>
 </html>
