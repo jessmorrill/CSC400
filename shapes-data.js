@@ -92,22 +92,21 @@ function getShapeBySlug(slug) {
     return SHAPES.find(shape => shape.slug === slug) || null;
 }
 
-const AUDIO_URLS = {
-    cone: 'audio/cone.mp3',
-    sphere: 'audio/sphere.mp3',
-    cube: 'audio/cube.mp3',
-    cylinder: 'audio/cylinder.mp3',
-    pyramid: 'audio/pyramid.mp3',
-    prism: 'audio/triangular-prism.mp3'
+const NET_TEXTURE_URLS = {
+    cube: 'textures/cube-net.svg',
+    pyramid: 'textures/pyramid-net.svg',
+    prism: 'textures/prism-net.svg',
+    cone: 'textures/cone-net.svg',
+    cylinder: 'textures/cylinder-net.svg'
 };
 
-const audioCache = {};
+const netTextureCache = {};
 
-function getShapeAudio(key) {
-    if (audioCache[key]) return audioCache[key];
-    const url = AUDIO_URLS[key];
+function getNetTexture(slug) {
+    if (slug === 'sphere') return null;
+    if (netTextureCache[slug]) return netTextureCache[slug];
+    const url = NET_TEXTURE_URLS[slug];
     if (!url) return null;
-    const audio = new Audio(url);
-    audioCache[key] = audio;
-    return audio;
+    netTextureCache[slug] = url;
+    return url;
 }

@@ -1,8 +1,8 @@
 const NAV_LINKS = [
-    { label: 'Home', href: 'Index.html', page: 'home', icon: '🏠' },
-    { label: 'K-4', href: 'K4.html', page: 'k4', icon: '🔷' },
-    { label: '5-6', href: 'Grade56.html', page: 'grade56', icon: '📐' },
-    { label: 'Marker', href: 'Printmarker.html', page: 'print-marker', icon: '🖨️' }
+    { label: 'Home', href: 'Index.html', page: 'home' },
+    { label: 'K-4', href: 'K4.html', page: 'k4' },
+    { label: '5-6', href: 'Grade56.html', page: 'grade56' },
+    { label: 'Marker', href: 'Printmarker.html', page: 'print-marker' }
 ];
 
 function renderNavbar() {
@@ -13,21 +13,20 @@ function renderNavbar() {
 
     container.innerHTML = NAV_LINKS.map(link => {
         const activeClass = link.page === currentPage ? ' class="active"' : '';
-        return `<a href="${link.href}"${activeClass}><span class="nav-icon">${link.icon}</span><span class="nav-label">${link.label}</span></a>`;
+        return `<a href="${link.href}"${activeClass}><span class="nav-label">${link.label}</span></a>`;
     }).join('');
 }
 
 let currentShapeIndex = 0;
 let currentGrade = 'k4';
 
-// K-4 only. Untouched from before — its own flag, its own function.
+// K-4 only tracking flags
 let textureMode = false;
 
-// 5-6 only. Two completely independent flags/functions — neither
-// calls the other, neither shares state with textureMode. A user
-// can have skeleton ON and net ON and OFF in any combination.
+// 5-6 only independent tracking flags
 let skeletonMode = false;
 let netMode = false;
+let popupActive = false;
 
 let arLayerObserver = null;
 let customArComponentsRegistered = false;
@@ -119,16 +118,7 @@ function startArLayerObserver() {
 }
 
 // -----------------------------------------------------------
-// 5-6 skeleton geometry helpers.
-// Straight-edge solids (cube, pyramid, prism) build real flat
-// geometry and use EdgesGeometry, which is accurate for them
-// because their faces are genuinely flat/planar.
-// Curved solids (cone, cylinder) do NOT use EdgesGeometry — a
-// cone/cylinder mesh is triangulated to approximate the curve,
-// so EdgesGeometry would wrongly flag every triangle seam on the
-// curved surface as an "edge". Instead their true curved edges
-// (circular rims) are drawn by hand as line loops.
-// Sphere has no entry anywhere here: 0 edges, 0 vertices.
+// 5-6 skeleton geometry helpers
 // -----------------------------------------------------------
 
 function boxCorners(hx, hy, hz) {
@@ -140,26 +130,15 @@ function boxCorners(hx, hy, hz) {
 }
 
 function pyramidBaseCorners(halfBase, height) {
-    const halfHeight = height / 2;
+    const yOffset = -0.25; 
     const corners = [];
-    // square base corners, offset 45 degrees to match ConeGeometry(radialSegments:4)'s orientation
     const r = halfBase * Math.SQRT2;
     for (let i = 0; i < 4; i++) {
         const theta = Math.PI / 4 + (i / 4) * Math.PI * 2;
-        corners.push(new THREE.Vector3(r * Math.cos(theta), -halfHeight, r * Math.sin(theta)));
+        corners.push(new THREE.Vector3(r * Math.cos(theta), yOffset, r * Math.sin(theta)));
     }
-    corners.push(new THREE.Vector3(0, halfHeight, 0)); // apex
+    corners.push(new THREE.Vector3(0, height + yOffset, 0)); // apex
     return corners;
-}
-
-function makeCircleLine(radius, y, color, segments = 64) {
-    const points = [];
-    for (let i = 0; i <= segments; i++) {
-        const theta = (i / segments) * Math.PI * 2;
-        points.push(new THREE.Vector3(radius * Math.cos(theta), y, radius * Math.sin(theta)));
-    }
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    return new THREE.Line(geometry, new THREE.LineBasicMaterial({ color }));
 }
 
 function prismCorners(length, halfBase, height) {
@@ -195,67 +174,125 @@ function buildPrismFaceGeometry(length, halfBase, height) {
     return geometry;
 }
 
-// Returns { faceGeometry, vertexPositions, edgeObjects } or null
-// (sphere) if the shape has no skeleton representation at all.
-// edgeObjects is an array of THREE.Object3D (Line/LineSegments)
-// ready to add to a group directly — built per-shape rather than
-// derived generically, so curved vs. straight edges are correct.
+function createThickEdgeMesh(v1, v2, radius = 0.015, color = 0xfacc15) {
+    const distance = v1.distanceTo(v2);
+    const geometry = new THREE.CylinderGeometry(radius, radius, distance, 6);
+    const material = new THREE.MeshBasicMaterial({ color: color });
+    const mesh = new THREE.Mesh(geometry, material);
+
+    const position = new THREE.Vector3().addVectors(v1, v2).multiplyScalar(0.5);
+    mesh.position.copy(position);
+
+    const direction = new THREE.Vector3().subVectors(v2, v1).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    mesh.quaternion.setFromUnitVectors(up, direction);
+
+    return mesh;
+}
+
+function createCircleTubeSkeleton(radius, y, color = 0xfacc15, segments = 48, tubeRadius = 0.015) {
+    const group = new THREE.Group();
+    const points = [];
+    for (let i = 0; i <= segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+        points.push(new THREE.Vector3(radius * Math.cos(theta), y, radius * Math.sin(theta)));
+    }
+    for (let i = 0; i < segments; i++) {
+        group.add(createThickEdgeMesh(points[i], points[i + 1], tubeRadius, color));
+    }
+    return group;
+}
+
 function getSkeletonData(slug) {
-    const edgeColor = 0x111827;
+    const edgeColor = 0xfacc15; // Bright Yellow
+    const r = 0.015;
 
     switch (slug) {
         case 'cube': {
             const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const corners = boxCorners(0.5, 0.5, 0.5);
+            const edgeGroup = new THREE.Group();
+            
+            const connections = [
+                [0,1], [1,3], [3,2], [2,0],
+                [4,5], [5,7], [7,6], [6,4],
+                [0,4], [1,5], [2,6], [3,7]
+            ];
+            connections.forEach(([i, j]) => edgeGroup.add(createThickEdgeMesh(corners[i], corners[j], r, edgeColor)));
+
             return {
                 faceGeometry: geometry,
-                vertexPositions: boxCorners(0.5, 0.5, 0.5),
-                edgeObjects: [new THREE.LineSegments(
-                    new THREE.EdgesGeometry(geometry),
-                    new THREE.LineBasicMaterial({ color: edgeColor })
-                )]
+                vertexPositions: corners,
+                edgeGroup: edgeGroup
             };
         }
         case 'pyramid': {
             const geometry = new THREE.ConeGeometry(0.65 * Math.SQRT1_2, 1, 4);
             geometry.rotateY(Math.PI / 4);
+            const corners = pyramidBaseCorners(0.65 * Math.SQRT1_2, 1);
+            const edgeGroup = new THREE.Group();
+
+            edgeGroup.add(createThickEdgeMesh(corners[0], corners[1], r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(corners[1], corners[2], r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(corners[2], corners[3], r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(corners[3], corners[0], r, edgeColor));
+            
+            edgeGroup.add(createThickEdgeMesh(corners[0], corners[4], r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(corners[1], corners[4], r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(corners[2], corners[4], r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(corners[3], corners[4], r, edgeColor));
+
             return {
                 faceGeometry: geometry,
-                vertexPositions: pyramidBaseCorners(0.65 * Math.SQRT1_2, 1),
-                edgeObjects: [new THREE.LineSegments(
-                    new THREE.EdgesGeometry(geometry),
-                    new THREE.LineBasicMaterial({ color: edgeColor })
-                )]
+                vertexPositions: corners,
+                edgeGroup: edgeGroup
             };
         }
         case 'cone': {
-            // 1 vertex (the apex), 1 curved edge (the circular base rim).
-            // No straight edges at all.
+            const edgeGroup = new THREE.Group();
+            edgeGroup.add(createCircleTubeSkeleton(0.5, -0.5, edgeColor, 48, r));
+            edgeGroup.add(createThickEdgeMesh(new THREE.Vector3(0, 0.5, 0), new THREE.Vector3(0.5, -0.5, 0), r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(new THREE.Vector3(0, 0.5, 0), new THREE.Vector3(-0.5, -0.5, 0), r, edgeColor));
+
             return {
                 faceGeometry: new THREE.ConeGeometry(0.5, 1, 48),
                 vertexPositions: [new THREE.Vector3(0, 0.5, 0)],
-                edgeObjects: [makeCircleLine(0.5, -0.5, edgeColor, 64)]
+                edgeGroup: edgeGroup
             };
         }
         case 'cylinder': {
-            // 0 vertices, 2 curved edges (top rim + bottom rim).
+            const edgeGroup = new THREE.Group();
+            edgeGroup.add(createCircleTubeSkeleton(0.42, 0.25, edgeColor, 48, r));
+            edgeGroup.add(createCircleTubeSkeleton(0.42, -0.25, edgeColor, 48, r));
+            edgeGroup.add(createThickEdgeMesh(new THREE.Vector3(0.42, 0.25, 0), new THREE.Vector3(0.42, -0.25, 0), r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(new THREE.Vector3(-0.42, 0.25, 0), new THREE.Vector3(-0.42, -0.25, 0), r, edgeColor));
+
             return {
                 faceGeometry: new THREE.CylinderGeometry(0.42, 0.42, 0.5, 48),
                 vertexPositions: [],
-                edgeObjects: [
-                    makeCircleLine(0.42, 0.25, edgeColor, 64),
-                    makeCircleLine(0.42, -0.25, edgeColor, 64)
-                ]
+                edgeGroup: edgeGroup
             };
         }
         case 'prism': {
             const geometry = buildPrismFaceGeometry(1.65, 0.52, 0.82);
+            const p = prismCorners(1.65, 0.52, 0.82);
+            const corners = Object.values(p);
+            const edgeGroup = new THREE.Group();
+
+            edgeGroup.add(createThickEdgeMesh(p.bl, p.br, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.fl, p.fr, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.bl, p.fl, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.br, p.fr, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.rl, p.rr, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.bl, p.rl, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.fl, p.rl, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.br, p.rr, r, edgeColor));
+            edgeGroup.add(createThickEdgeMesh(p.fr, p.rr, r, edgeColor));
+
             return {
                 faceGeometry: geometry,
-                vertexPositions: Object.values(prismCorners(1.65, 0.52, 0.82)),
-                edgeObjects: [new THREE.LineSegments(
-                    new THREE.EdgesGeometry(geometry),
-                    new THREE.LineBasicMaterial({ color: edgeColor })
-                )]
+                vertexPositions: corners,
+                edgeGroup: edgeGroup
             };
         }
         case 'sphere':
@@ -412,12 +449,6 @@ function registerCustomArComponents() {
         }
     });
 
-    // ---------------------------------------------------------
-    // 5-6 skeleton component. Independent feature — knows nothing
-    // about netMode. Faces render semi-transparent; vertices and
-    // edges render fully opaque, built per-shape via getSkeletonData
-    // so curved edges/vertex counts are geometrically correct.
-    // ---------------------------------------------------------
     AFRAME.registerComponent('shape-skeleton', {
         schema: { slug: { type: 'string' } },
         init: function () {
@@ -428,20 +459,10 @@ function registerCustomArComponents() {
                 return;
             }
 
-            const faceMaterial = new THREE.MeshStandardMaterial({
-                color: '#94a3b8',
-                transparent: true,
-                opacity: 0.22,
-                depthWrite: false,
-                side: THREE.DoubleSide,
-                roughness: 0.8
-            });
-            group.add(new THREE.Mesh(data.faceGeometry, faceMaterial));
+            group.add(data.edgeGroup);
 
-            data.edgeObjects.forEach(edgeObject => group.add(edgeObject));
-
-            const dotGeometry = new THREE.SphereGeometry(0.035, 12, 12);
-            const dotMaterial = new THREE.MeshBasicMaterial({ color: '#f59e0b' });
+            const dotGeometry = new THREE.SphereGeometry(0.045, 12, 12);
+            const dotMaterial = new THREE.MeshBasicMaterial({ color: '#fbbf24' });
             data.vertexPositions.forEach(point => {
                 const dot = new THREE.Mesh(dotGeometry, dotMaterial);
                 dot.position.copy(point);
@@ -455,12 +476,6 @@ function registerCustomArComponents() {
         }
     });
 
-    // ---------------------------------------------------------
-    // 5-6 net component. Independent feature — knows nothing
-    // about skeletonMode. Loads an actual 2D net image (not a
-    // canvas drawing) and maps it onto a flat plane. Never
-    // registered/used for sphere.
-    // ---------------------------------------------------------
     AFRAME.registerComponent('shape-net', {
         schema: { slug: { type: 'string' } },
         init: function () {
@@ -472,14 +487,14 @@ function registerCustomArComponents() {
             }
 
             const loader = new THREE.TextureLoader();
-            const texture = loader.load(url);
             const material = new THREE.MeshBasicMaterial({
-                map: texture,
+                map: loader.load(url),
                 transparent: true,
                 side: THREE.DoubleSide
             });
-            const plane = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), material);
-            plane.rotation.x = -Math.PI / 2; // lies flat, like a printed net on paper
+
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), material);
+            plane.rotation.x = -Math.PI / 2;
             group.add(plane);
 
             this.el.setObject3D('mesh', group);
@@ -504,7 +519,7 @@ function buildDie(entity) {
 
 function initExploreMode() {
     const container = document.getElementById('ar-container');
-    if (!container) return; // not on the explore page
+    if (!container) return;
     registerCustomArComponents();
 
     const params = new URLSearchParams(window.location.search);
@@ -524,14 +539,15 @@ function initExploreMode() {
             embedded
             arjs="${getArConfig()}"
             vr-mode-ui="enabled: false"
-            renderer="antialias: true; alpha: true; precision: high; physicallyCorrectLights: true; colorManagement: true;"
+            renderer="antialias: true; alpha: true; precision: high; physicallyCorrectLights: false; colorManagement: true;"
             loading-screen="enabled: false">
             <a-marker preset="hiro" smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="3">
                 <a-entity id="shape-entity" position="0 0.5 0"></a-entity>
-                <a-entity id="net-entity" position="1.3 -0.15 0" scale="0.9 0.9 0.9" visible="false"></a-entity>
-                <a-entity light="type: ambient; color: #ffffff; intensity: 0.3"></a-entity>
-                <a-entity light="type: directional; color: #ffffff; intensity: 1.55" position="1.2 2.5 1.4"></a-entity>
-                <a-entity light="type: directional; color: #bfdbfe; intensity: 0.25" position="-1 1.5 -1"></a-entity>
+                <a-entity id="net-entity" position="2.2 -0.15 0" scale="1.5 1.5 1.5" visible="false"></a-entity>
+                
+                <a-entity light="type: ambient; color: #ffffff; intensity: 0.35"></a-entity>
+                <a-entity light="type: directional; color: #ffffff; intensity: 1.8" position="2 4 2"></a-entity>
+                <a-entity light="type: directional; color: #a5b4fc; intensity: 0.15" position="-2 1 -2"></a-entity>
             </a-marker>
             <a-entity camera></a-entity>
         </a-scene>
@@ -541,8 +557,6 @@ function initExploreMode() {
     document.body.style.backgroundColor = 'transparent';
     document.documentElement.style.background = 'transparent';
 
-    // Show/hide the right buttons for this grade and wire each one
-    // to its own independent toggle function.
     const textureBtn = document.getElementById('btn-texture-toggle');
     const skeletonBtn = document.getElementById('btn-skeleton-toggle');
     const netBtn = document.getElementById('btn-net-toggle');
@@ -606,6 +620,45 @@ function renderShape() {
     const netEntity = document.getElementById('net-entity');
     if (!entity) return;
 
+    let popup = document.getElementById('sphere-popup');
+    
+    if (currentGrade === 'grade56' && shape.slug === 'sphere' && (skeletonMode || netMode)) {
+        skeletonMode = false;
+        netMode = false;
+
+        const skeletonBtn = document.getElementById('btn-skeleton-toggle');
+        if (skeletonBtn) {
+            skeletonBtn.classList.remove('on');
+            skeletonBtn.textContent = 'Show Skeleton';
+        }
+        const netBtn = document.getElementById('btn-net-toggle');
+        if (netBtn) {
+            netBtn.classList.remove('on');
+            netBtn.textContent = 'Show Net';
+        }
+
+        if (!popupActive && !popup) {
+            popupActive = true;
+            popup = document.createElement('div');
+            popup.id = 'sphere-popup';
+            popup.className = 'center-popup';
+            popup.innerHTML = `
+                <div class="popup-content">
+                    <p>A sphere has no edges, no vertices, and no net — it can’t be unfolded flat!</p>
+                    <button class="popup-close-btn" onclick="closeSpherePopup()">Got it</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+        }
+    } else {
+        if (popup) {
+            popup.remove();
+        }
+        if (shape.slug !== 'sphere') {
+            popupActive = false;
+        }
+    }
+
     entity.removeAttribute('geometry');
     entity.removeAttribute('material');
     entity.innerHTML = '';
@@ -613,7 +666,6 @@ function renderShape() {
     entity.setAttribute('scale', shape.scale);
     entity.setAttribute('rotation', shape.rotation);
 
-    // ---- Main shape body ----
     if (currentGrade === 'grade56' && skeletonMode) {
         entity.innerHTML = `<a-entity shape-skeleton="slug: ${shape.slug}"></a-entity>`;
     } else if (textureMode && shape.texturedType === 'die') {
@@ -630,7 +682,6 @@ function renderShape() {
         entity.setAttribute('material', `shader: standard; color: ${shape.color}; roughness: 0.72; metalness: 0; flatShading: true`);
     }
 
-    // ---- Net panel: fully independent of skeletonMode/textureMode ----
     if (netEntity) {
         if (currentGrade === 'grade56' && netMode && shape.slug !== 'sphere') {
             netEntity.setAttribute('visible', 'true');
@@ -638,17 +689,6 @@ function renderShape() {
         } else {
             netEntity.setAttribute('visible', 'false');
             netEntity.innerHTML = '';
-        }
-    }
-
-    // ---- Sphere note: shown only when a 5-6 toggle would otherwise be a no-op for sphere ----
-    const noteEl = document.getElementById('skeleton-note');
-    if (noteEl) {
-        if (currentGrade === 'grade56' && shape.slug === 'sphere' && (skeletonMode || netMode)) {
-            noteEl.hidden = false;
-            noteEl.textContent = 'A sphere has no edges, no vertices, and no net — it can\u2019t be unfolded flat!';
-        } else {
-            noteEl.hidden = true;
         }
     }
 
@@ -665,12 +705,34 @@ function renderShape() {
     }
 }
 
+// FIXED: Resets all view mode toggles and restores default button labels upon shape migration
 function changeShape(direction) {
+    textureMode = false;
+    skeletonMode = false;
+    netMode = false;
+
+    const textureBtn = document.getElementById('btn-texture-toggle');
+    if (textureBtn) {
+        textureBtn.classList.remove('on');
+        textureBtn.textContent = 'Show Object';
+    }
+
+    const skeletonBtn = document.getElementById('btn-skeleton-toggle');
+    if (skeletonBtn) {
+        skeletonBtn.classList.remove('on');
+        skeletonBtn.textContent = 'Show Skeleton';
+    }
+
+    const netBtn = document.getElementById('btn-net-toggle');
+    if (netBtn) {
+        netBtn.classList.remove('on');
+        netBtn.textContent = 'Show Net';
+    }
+
     currentShapeIndex = (currentShapeIndex + direction + SHAPES.length) % SHAPES.length;
     renderShape();
 }
 
-// K-4 only. Untouched.
 function toggleTexture() {
     textureMode = !textureMode;
     const btn = document.getElementById('btn-texture-toggle');
@@ -681,7 +743,6 @@ function toggleTexture() {
     renderShape();
 }
 
-// 5-6 only. Independent of toggleNet() — does not read or write netMode.
 function toggleSkeleton() {
     skeletonMode = !skeletonMode;
     const btn = document.getElementById('btn-skeleton-toggle');
@@ -692,7 +753,6 @@ function toggleSkeleton() {
     renderShape();
 }
 
-// 5-6 only. Independent of toggleSkeleton() — does not read or write skeletonMode.
 function toggleNet() {
     netMode = !netMode;
     const btn = document.getElementById('btn-net-toggle');
@@ -703,10 +763,17 @@ function toggleNet() {
     renderShape();
 }
 
-// -----------------------------------------------------------
-// Boot
-// -----------------------------------------------------------
+window.closeSpherePopup = function() {
+    const popup = document.getElementById('sphere-popup');
+    if (popup) {
+        popup.remove();
+    }
+    setTimeout(() => {
+        popupActive = false;
+    }, 0);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     renderNavbar();
-    initExploreMode(); // no-ops on non-explore pages
+    initExploreMode();
 });

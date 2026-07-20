@@ -2,530 +2,640 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    />
-
-    <title>Choose the Correct Shape</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>Shape Quiz - Shape Explorer</title>
     <link rel="stylesheet" href="Style.css" />
-
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #0a0b0b;
-            color: #1f2937;
+        /* ---------- Shape Quiz page ---------- */
+        body[data-page="k4"] .page {
+            padding-top: 20px;
         }
 
-        .game-page {
-            max-width: 900px;
+        .mode-toggle-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto 16px;
+        }
+
+        .mode-toggle-btn {
+            flex: 1;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.65);
+            color: #1f2937;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+        }
+
+        .mode-toggle-btn:active {
+            transform: translateY(2px);
+        }
+
+        .mode-toggle-btn.active {
+            background: #ffffff;
+            color: #2b6cb0;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .quiz-card {
+            width: 100%;
+            max-width: 460px;
             margin: 0 auto;
-            padding: 24px;
+            background: white;
+            color: #1f2937;
+            border-radius: 22px;
+            box-shadow: 0 10px 0 rgba(0, 0, 0, 0.15);
+            padding: 22px 22px 26px;
             text-align: center;
         }
 
-        .game-header {
-            background: rgb(5, 5, 5);
-            padding: 24px;
-            border-radius: 18px;
-            margin-bottom: 24px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        .quiz-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
         }
 
-        .game-header h1 {
-            margin-top: 0;
+        .quiz-progress {
+            font-weight: 700;
+            color: #64748b;
+            font-size: 14px;
         }
 
-        .game-info {
+        .repeat-btn {
+            border: none;
+            background: #eef2ff;
+            color: #2b6cb0;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        .repeat-btn:active {
+            transform: translateY(1px);
+        }
+
+        .repeat-btn.playing {
+            background: #dbe4ff;
+        }
+
+        .quiz-prompt {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 10px 0 18px;
+            color: #1f2937;
+        }
+
+        /* single-shape "identify" layout */
+        .quiz-shape-stage {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-top: 16px;
-            font-weight: bold;
+            margin-bottom: 18px;
         }
 
-        .difficulty-buttons {
-            margin-top: 18px;
+        .quiz-shape-stage svg {
+            width: 150px;
+            height: 150px;
         }
 
-        button {
-            border: none;
-            border-radius: 10px;
-            padding: 12px 18px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .difficulty-button {
-            background: #dbeafe;
-            color: #1e3a8a;
-            margin: 5px;
-        }
-
-        .difficulty-button.active {
-            background: #2563eb;
-            color: white;
-        }
-
-        #question {
-            font-size: 26px;
-            margin: 25px 0;
-        }
-
-        .shape-options {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(180px, 1fr));
-            gap: 25px;
-        }
-
-        .shape-card {
-            background: white;
-            border: 4px solid transparent;
-            border-radius: 20px;
-            min-height: 260px;
-            padding: 20px;
-            cursor: pointer;
+        .name-choices {
             display: flex;
             flex-direction: column;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .name-choice-btn {
+            border: 3px solid transparent;
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+        }
+
+        .name-choice-btn:active {
+            transform: translateY(2px);
+        }
+
+        .name-choice-btn.selected {
+            border-color: #2b6cb0;
+            background: #eaf2fb;
+        }
+
+        /* two-image "select the shape" layout */
+        .image-choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .image-choice-btn {
+            border: 4px solid transparent;
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 14px 8px;
+            cursor: pointer;
+            display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s, border-color 0.2s;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
         }
 
-        .shape-card:hover {
-            transform: scale(1.03);
-            border-color: #60a5fa;
+        .image-choice-btn:active {
+            transform: translateY(2px);
         }
 
-        .shape-name {
-            margin-top: 20px;
-            font-size: 22px;
-            font-weight: bold;
+        .image-choice-btn svg {
+            width: 110px;
+            height: 110px;
         }
 
-        .feedback {
-            min-height: 45px;
-            font-size: 22px;
-            font-weight: bold;
-            margin: 24px 0;
+        .image-choice-btn.selected {
+            border-color: #2b6cb0;
+            background: #eaf2fb;
         }
 
-        .correct-message {
-            color: #e5ece7;
+        .quiz-nav-row {
+            display: flex;
+            gap: 12px;
         }
 
-        .incorrect-message {
-            color: #dc2626;
+        .quiz-nav-row .big-button {
+            font-size: 16px;
+            min-height: 50px;
+            padding: 12px 16px;
         }
 
-        #nextButton {
-            background: #2563eb;
+        #btn-quiz-back {
+            flex: 1;
+        }
+
+        #btn-quiz-next {
+            flex: 2;
+            background: #cbd5e1;
+            color: #475569;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+        }
+
+        #btn-quiz-next.ready {
+            background: #22c55e;
             color: white;
-            display: none;
-            margin: auto;
         }
 
-        .shape {
-            position: relative;
+        #btn-quiz-back:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
 
-        .cube {
-            width: 115px;
-            height: 115px;
-            background: #60a5fa;
-            border: 5px solid #1d4ed8;
-            box-shadow: 14px 14px 0 #93c5fd;
+        /* results screen */
+        .results-score {
+            font-size: 40px;
+            font-weight: 800;
+            margin: 6px 0 4px;
+            color: #16a34a;
         }
 
-        .sphere {
-            width: 125px;
-            height: 125px;
-            border-radius: 50%;
-            background: radial-gradient(
-                circle at 35% 30%,
-                #ffffff,
-                #f472b6 30%,
-                #be185d 85%
-            );
+        .results-caption {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 20px;
         }
 
-        .cone {
-            width: 0;
-            height: 0;
-            border-left: 65px solid transparent;
-            border-right: 65px solid transparent;
-            border-top: 145px solid #f59e0b;
-            border-radius: 50%;
+        .results-list {
+            text-align: left;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .cylinder {
-            width: 105px;
-            height: 145px;
-            background: #34d399;
-            border-radius: 50% / 14%;
-            border: 4px solid #047857;
+        .results-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #f8fafc;
         }
 
-        .rectangular-prism {
-            width: 145px;
-            height: 90px;
-            background: #a78bfa;
-            border: 5px solid #6d28d9;
-            box-shadow: 14px 14px 0 #c4b5fd;
+        .results-list li.correct {
+            background: #ecfdf5;
         }
 
-        .pyramid {
-            width: 0;
-            height: 0;
-            border-left: 75px solid transparent;
-            border-right: 75px solid transparent;
-            border-bottom: 145px solid #fb7185;
+        .results-list li.incorrect {
+            background: #fef2f2;
         }
 
-        @media (max-width: 600px) {
-            .shape-options {
-                grid-template-columns: 1fr;
+        .results-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 380px) {
+            .quiz-prompt {
+                font-size: 19px;
             }
 
-            #question {
-                font-size: 22px;
+            .quiz-shape-stage svg {
+                width: 120px;
+                height: 120px;
             }
 
-            .shape-card {
-                min-height: 220px;
+            .image-choice-btn svg {
+                width: 90px;
+                height: 90px;
             }
         }
     </style>
 </head>
+<body data-page="k4" data-grade="k4">
+    <nav id="navbar"></nav>
 
-<body>
-    <main class="game-page">
-        <section class="game-header">
-            <h1>Choose the Correct Shape</h1>
+    <main class="page">
+        <h1>Shape Quiz</h1>
 
-            <p>
-                Read the question and press the correct 3D shape.
-            </p>
+        <div class="mode-toggle-row">
+            <button id="btn-mode-match" class="mode-toggle-btn active" type="button">Shape Match</button>
+            <button id="btn-mode-property" class="mode-toggle-btn" type="button">Property Quiz</button>
+        </div>
 
-            <div class="difficulty-buttons">
-                <button
-                    id="easyButton"
-                    class="difficulty-button active"
-                    type="button"
-                >
-                    Easy Mode
-                </button>
+        <div class="quiz-card">
+            <!-- Quiz question view -->
+            <div id="quiz-question-view">
+                <div class="quiz-topbar">
+                    <span class="quiz-progress" id="quiz-progress">Question 1 of 12</span>
+                    <button id="btn-repeat-audio" class="repeat-btn" type="button" aria-label="Repeat the question">
+                        🔊 <span>Repeat</span>
+                    </button>
+                </div>
 
-                <button
-                    id="hardButton"
-                    class="difficulty-button"
-                    type="button"
-                >
-                    Hard Mode
-                </button>
+                <h2 class="quiz-prompt" id="quiz-prompt">What shape is this?</h2>
+
+                <!-- filled in by JS: either .quiz-shape-stage + .name-choices,
+                     or .image-choices, depending on question type -->
+                <div id="quiz-answer-area"></div>
+
+                <div class="quiz-nav-row">
+                    <button id="btn-quiz-back" class="big-button secondary" type="button">&larr; Back</button>
+                    <button id="btn-quiz-next" class="big-button" type="button" disabled>Next</button>
+                </div>
             </div>
 
-            <div class="game-info">
-                <span>
-                    Score:
-                    <strong id="score">0</strong>
-                </span>
-
-                <span>
-                    Question:
-                    <strong id="questionNumber">1</strong>/10
-                </span>
+            <!-- Results view (hidden until the quiz is submitted) -->
+            <div id="quiz-results-view" style="display:none;">
+                <h2 style="margin-top:0;">Quiz Complete!</h2>
+                <div class="results-score" id="results-score">0 / 12</div>
+                <p class="results-caption">Here's how you did:</p>
+                <ul class="results-list" id="results-list"></ul>
+                <div class="button-stack" style="margin: 0 auto;">
+                    <button id="btn-play-again" class="big-button" type="button">Play Again</button>
+                    <a class="big-button secondary" href="K4.html">Back to K-4 Menu</a>
+                </div>
             </div>
-        </section>
-
-        <h2 id="question">Press on the cube.</h2>
-
-        <section class="shape-options">
-            <button
-                id="firstShapeCard"
-                class="shape-card"
-                type="button"
-            >
-                <div id="firstShape" class="shape cube"></div>
-                <div id="firstShapeName" class="shape-name">Cube</div>
-            </button>
-
-            <button
-                id="secondShapeCard"
-                class="shape-card"
-                type="button"
-            >
-                <div id="secondShape" class="shape sphere"></div>
-                <div id="secondShapeName" class="shape-name">Sphere</div>
-            </button>
-        </section>
-
-        <div id="feedback" class="feedback"></div>
-
-        <button id="nextButton" type="button">
-            Next Question
-        </button>
+        </div>
     </main>
 
+<script src="App.js"></script>
     <script>
-        const shapes = [
-            {
-                name: "Cube",
-                className: "cube",
-                properties: [
-                    "Which shape has 6 equal square faces?",
-                    "Which shape cannot roll and has 8 vertices?"
-                ]
+        // -----------------------------------------------------------
+        // Shape data: display name, brand color (matches shapes-data.js),
+        // and a hand-drawn pseudo-3D wireframe SVG
+        // -----------------------------------------------------------
+        const SHAPE_INFO = {
+            cone: {
+                name: 'Cone',
+                color: '#e74c3c',
+                nameAudio: 'audio/cone.mp3',
+                svg: (c) => `
+                    <ellipse cx="70" cy="115" rx="45" ry="14" fill="${c}" fill-opacity="0.15" stroke="${c}" stroke-width="3"/>
+                    <path d="M25,115 L70,20 L115,115" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>
+                `
             },
-            {
-                name: "Sphere",
-                className: "sphere",
-                properties: [
-                    "Which shape can roll in every direction?",
-                    "Which shape has no edges and no vertices?"
-                ]
+            sphere: {
+                name: 'Sphere',
+                color: '#3498db',
+                nameAudio: 'audio/sphere.mp3',
+                svg: (c) => `
+                    <circle cx="70" cy="70" r="45" fill="${c}" fill-opacity="0.15" stroke="${c}" stroke-width="3"/>
+                    <ellipse cx="70" cy="70" rx="45" ry="14" fill="none" stroke="${c}" stroke-width="2" stroke-opacity="0.6"/>
+                    <ellipse cx="70" cy="70" rx="14" ry="45" fill="none" stroke="${c}" stroke-width="2" stroke-opacity="0.6"/>
+                `
             },
-            {
-                name: "Cone",
-                className: "cone",
-                properties: [
-                    "Which shape has one circular base and one vertex?",
-                    "Which shape can roll in a circle?"
-                ]
+            cube: {
+                name: 'Cube',
+                color: '#2ecc71',
+                nameAudio: 'audio/cube.mp3',
+                svg: (c) => `
+                    <polygon points="35,55 85,55 110,30 60,30" fill="${c}" fill-opacity="0.28" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>
+                    <polygon points="85,55 110,30 110,80 85,105" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>
+                    <rect x="35" y="55" width="50" height="50" fill="${c}" fill-opacity="0.1" stroke="${c}" stroke-width="3"/>
+                `
             },
-            {
-                name: "Cylinder",
-                className: "cylinder",
-                properties: [
-                    "Which shape has two circular faces?",
-                    "Which shape can roll and also stand upright?"
-                ]
+            cylinder: {
+                name: 'Cylinder',
+                color: '#06b6d4',
+                nameAudio: 'audio/cylinder.mp3',
+                svg: (c) => `
+                    <line x1="25" y1="35" x2="25" y2="115" stroke="${c}" stroke-width="3"/>
+                    <line x1="115" y1="35" x2="115" y2="115" stroke="${c}" stroke-width="3"/>
+                    <rect x="25" y="35" width="90" height="80" fill="${c}" fill-opacity="0.12" stroke="none"/>
+                    <ellipse cx="70" cy="115" rx="45" ry="14" fill="${c}" fill-opacity="0.2" stroke="${c}" stroke-width="3"/>
+                    <ellipse cx="70" cy="35" rx="45" ry="14" fill="${c}" fill-opacity="0.2" stroke="${c}" stroke-width="3"/>
+                `
             },
-            {
-                name: "Rectangular Prism",
-                className: "rectangular-prism",
-                properties: [
-                    "Which shape looks like a box?",
-                    "Which shape has rectangular faces and 8 vertices?"
-                ]
+            pyramid: {
+                name: 'Pyramid',
+                color: '#f1c40f',
+                nameAudio: 'audio/pyramid.mp3',
+                svg: (c) => `
+                    <polygon points="35,100 85,100 110,75 60,75" fill="${c}" fill-opacity="0.2" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M72,25 L35,100 M72,25 L85,100 M72,25 L110,75 M72,25 L60,75" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+                `
             },
-            {
-                name: "Pyramid",
-                className: "pyramid",
-                properties: [
-                    "Which shape has triangular faces that meet at one point?",
-                    "Which shape has a base and one top vertex?"
-                ]
+            prism: {
+                name: 'Triangular Prism',
+                color: '#9b59b6',
+                nameAudio: 'audio/prism.mp3',
+                svg: (c) => `
+                    <polygon points="35,110 85,110 60,55" fill="${c}" fill-opacity="0.2" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>
+                    <polygon points="60,90 110,90 85,35" fill="${c}" fill-opacity="0.12" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M35,110 L60,90 M85,110 L110,90 M60,55 L85,35" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+                `
             }
+        };
+
+        function shapeSvgMarkup(slug) {
+            const info = SHAPE_INFO[slug];
+            return `<svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">${info.svg(info.color)}</svg>`;
+        }
+
+        // -----------------------------------------------------------
+        // Fixed question banks.
+        // -----------------------------------------------------------
+        const MATCH_QUESTIONS = [
+            { type: 'identify', shape: 'cone', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['cone', 'sphere', 'pyramid'] },
+            { type: 'select', shape: 'sphere', promptText: 'Click on the sphere.', audio: 'audio/selectSphere.mp3', options: ['sphere', 'cube'] },
+            { type: 'identify', shape: 'cube', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['cube', 'cylinder', 'prism'] },
+            { type: 'select', shape: 'cylinder', promptText: 'Click on the cylinder.', audio: 'audio/selectCylinder.mp3', options: ['cylinder', 'pyramid'] },
+            { type: 'identify', shape: 'pyramid', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['pyramid', 'cone', 'cube'] },
+            { type: 'select', shape: 'prism', promptText: 'Click on the triangular prism.', audio: 'audio/selectPrism.mp3', options: ['prism', 'cone'] },
+            { type: 'select', shape: 'cone', promptText: 'Click on the cone.', audio: 'audio/selectCone.mp3', options: ['cone', 'cylinder'] },
+            { type: 'identify', shape: 'sphere', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['sphere', 'cylinder', 'prism'] },
+            { type: 'select', shape: 'cube', promptText: 'Click on the cube.', audio: 'audio/selectCube.mp3', options: ['cube', 'prism'] },
+            { type: 'identify', shape: 'cylinder', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['cylinder', 'cube', 'cone'] },
+            { type: 'select', shape: 'pyramid', promptText: 'Click on the pyramid.', audio: 'audio/selectPyramid.mp3', options: ['pyramid', 'sphere'] },
+            { type: 'identify', shape: 'prism', promptText: 'What shape is this?', audio: 'audio/whatShapeIsThis.mp3', choices: ['prism', 'pyramid', 'sphere'] }
         ];
 
-        const totalQuestions = 10;
+        const PROPERTY_QUESTIONS = [
+            { type: 'select', shape: 'sphere', promptText: 'Which shape is perfectly round like a ball and can roll in any direction?', audio: 'audio/rollDownHill.mp3', options: ['sphere', 'cube'] },
+            { type: 'select', shape: 'cube', promptText: 'Which shape looks like a box and has 6 flat square faces?', audio: 'audio/sixFlatFaces.mp3', options: ['cube', 'sphere'] },
+            { type: 'select', shape: 'cone', promptText: 'Which shape has a flat circle bottom and a pointy tip like an ice cream cone?', audio: 'audio/onePointyTip.mp3', options: ['cone', 'cylinder'] },
+            { type: 'select', shape: 'cylinder', promptText: 'Which shape looks like a soup can, has 2 flat circle faces, and can roll on its curved side?', audio: 'audio/twoFlatCircles.mp3', options: ['cylinder', 'cube'] },
+            { type: 'select', shape: 'pyramid', promptText: 'Which shape has a flat square bottom and 4 triangle sides that meet at a sharp point at the top?', audio: 'audio/pointyTriangleSides.mp3', options: ['pyramid', 'prism'] },
+            { type: 'select', shape: 'prism', promptText: 'Which shape looks like a camping tent, with a triangle on each end and flat rectangles connecting them?', audio: 'audio/triangleEnds.mp3', options: ['prism', 'pyramid'] }
+        ];
 
-        let score = 0;
-        let currentQuestion = 1;
-        let correctShape = null;
-        let difficulty = "easy";
-        let answered = false;
+        const QUESTION_BANKS = {
+            match: MATCH_QUESTIONS,
+            property: PROPERTY_QUESTIONS
+        };
 
-        const questionElement = document.getElementById("question");
-        const scoreElement = document.getElementById("score");
-        const questionNumberElement =
-            document.getElementById("questionNumber");
-
-        const firstShapeCard =
-            document.getElementById("firstShapeCard");
-
-        const secondShapeCard =
-            document.getElementById("secondShapeCard");
-
-        const firstShape = document.getElementById("firstShape");
-        const secondShape = document.getElementById("secondShape");
-
-        const firstShapeName =
-            document.getElementById("firstShapeName");
-
-        const secondShapeName =
-            document.getElementById("secondShapeName");
-
-        const feedbackElement =
-            document.getElementById("feedback");
-
-        const nextButton =
-            document.getElementById("nextButton");
-
-        const easyButton =
-            document.getElementById("easyButton");
-
-        const hardButton =
-            document.getElementById("hardButton");
-
-        function getRandomItem(array) {
-            const randomIndex = Math.floor(Math.random() * array.length);
-            return array[randomIndex];
+        // Fisher-Yates shuffle algorithm
+        function shuffle(list) {
+            const copy = list.slice();
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
         }
 
-        function getTwoDifferentShapes() {
-            const first = getRandomItem(shapes);
-            let second = getRandomItem(shapes);
+        // Setup mutable state variables
+        let currentMode = 'match';
+        let activeQuestions = [];
+        let currentIndex = 0;
+        let answers = [];
 
-            while (second.name === first.name) {
-                second = getRandomItem(shapes);
+        let activeAudio = null;
+        let activeAudioKey = null;
+
+        // Central function to cleanly boot up or reset the quiz
+        function startQuiz(mode) {
+            currentMode = mode;
+            
+            // 1. Fetch questions, duplicate them safely, and shuffle them freshly right now
+            activeQuestions = shuffle(QUESTION_BANKS[currentMode]);
+            
+            // 2. Reset indices and clear out past state answers completely
+            currentIndex = 0;
+            answers = new Array(activeQuestions.length).fill(null);
+            
+            // 3. Clear existing audio loops
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio = null;
+                activeAudioKey = null;
             }
 
-            return [first, second];
+            // 4. Reset UI container displays
+            document.getElementById('quiz-results-view').style.display = 'none';
+            document.getElementById('quiz-question-view').style.display = 'block';
+            
+            // 5. Draw first question frame
+            render();
         }
 
-        function updateShapeCard(
-            shapeElement,
-            nameElement,
-            shapeData
-        ) {
-            shapeElement.className = `shape ${shapeData.className}`;
-            nameElement.textContent = shapeData.name;
-        }
-
-        function createQuestion() {
-            answered = false;
-            feedbackElement.textContent = "";
-            feedbackElement.className = "feedback";
-            nextButton.style.display = "none";
-
-            firstShapeCard.disabled = false;
-            secondShapeCard.disabled = false;
-
-            const [shapeOne, shapeTwo] = getTwoDifferentShapes();
-            const displayedShapes = [shapeOne, shapeTwo];
-
-            correctShape = getRandomItem(displayedShapes);
-
-            updateShapeCard(
-                firstShape,
-                firstShapeName,
-                shapeOne
-            );
-
-            updateShapeCard(
-                secondShape,
-                secondShapeName,
-                shapeTwo
-            );
-
-            firstShapeCard.dataset.shapeName = shapeOne.name;
-            secondShapeCard.dataset.shapeName = shapeTwo.name;
-
-            if (difficulty === "easy") {
-                questionElement.textContent =
-                    `Press on the ${correctShape.name}.`;
-            } else {
-                questionElement.textContent =
-                    getRandomItem(correctShape.properties);
-            }
-        }
-
-        function checkAnswer(selectedName) {
-            if (answered) {
+        function playAudio(src, key, onDone) {
+            if (activeAudio && activeAudioKey === key) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+                activeAudio = null;
+                activeAudioKey = null;
+                if (onDone) onDone();
                 return;
             }
-
-            answered = true;
-
-            firstShapeCard.disabled = true;
-            secondShapeCard.disabled = true;
-
-            if (selectedName === correctShape.name) {
-                score += 1;
-                scoreElement.textContent = score;
-
-                feedbackElement.textContent =
-                    "Correct! Great job!";
-
-                feedbackElement.className =
-                    "feedback correct-message";
-            } else {
-                feedbackElement.textContent =
-                    `Not quite. The correct answer was ${correctShape.name}.`;
-
-                feedbackElement.className =
-                    "feedback incorrect-message";
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
             }
 
-            nextButton.style.display = "block";
+            const audio = new Audio(src);
+            activeAudio = audio;
+            activeAudioKey = key;
+
+            const clearIfCurrent = () => {
+                if (activeAudio === audio) {
+                    activeAudio = null;
+                    activeAudioKey = null;
+                }
+                if (onDone) onDone();
+            };
+
+            audio.addEventListener('ended', clearIfCurrent);
+            audio.addEventListener('error', clearIfCurrent);
+            audio.play().catch(clearIfCurrent);
         }
 
-        function finishGame() {
-            document.querySelector(".shape-options").style.display =
-                "none";
-
-            nextButton.style.display = "none";
-
-            questionElement.textContent = "Game Complete!";
-
-            feedbackElement.textContent =
-                `You scored ${score} out of ${totalQuestions}.`;
-
-            feedbackElement.className =
-                "feedback correct-message";
+        function playQuestionAudio(question, { forceRestart } = {}) {
+            const repeatBtn = document.getElementById('btn-repeat-audio');
+            if (forceRestart && activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+                activeAudio = null;
+                activeAudioKey = null;
+            }
+            repeatBtn.classList.add('playing');
+            playAudio(question.audio, 'question-audio', () => repeatBtn.classList.remove('playing'));
         }
 
-        function nextQuestion() {
-            if (currentQuestion >= totalQuestions) {
-                finishGame();
+        function render() {
+            const question = activeQuestions[currentIndex];
+            document.getElementById('quiz-progress').textContent = `Question ${currentIndex + 1} of ${activeQuestions.length}`;
+            document.getElementById('quiz-prompt').textContent = question.promptText;
+
+            const answerArea = document.getElementById('quiz-answer-area');
+            const selected = answers[currentIndex];
+
+            if (question.type === 'identify') {
+                answerArea.innerHTML = `
+                    <div class="quiz-shape-stage">${shapeSvgMarkup(question.shape)}</div>
+                    <div class="name-choices">
+                        ${question.choices.map(slug => `
+                            <button type="button" class="name-choice-btn${selected === slug ? ' selected' : ''}" data-slug="${slug}">
+                                ${SHAPE_INFO[slug].name}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                answerArea.querySelectorAll('.name-choice-btn').forEach(btn => {
+                    btn.addEventListener('click', () => selectAnswer(btn.dataset.slug, btn, question));
+                });
+            } else {
+                answerArea.innerHTML = `
+                    <div class="image-choices">
+                        ${question.options.map(slug => `
+                            <button type="button" class="image-choice-btn${selected === slug ? ' selected' : ''}" data-slug="${slug}" aria-label="shape option">
+                                ${shapeSvgMarkup(slug)}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                answerArea.querySelectorAll('.image-choice-btn').forEach(btn => {
+                    btn.addEventListener('click', () => selectAnswer(btn.dataset.slug, btn, question));
+                });
+            }
+
+            document.getElementById('btn-quiz-back').disabled = currentIndex === 0;
+            const nextBtn = document.getElementById('btn-quiz-next');
+            nextBtn.textContent = currentIndex === activeQuestions.length - 1 ? 'Submit' : 'Next';
+            nextBtn.classList.toggle('ready', !!selected);
+            nextBtn.disabled = !selected;
+
+            playQuestionAudio(question, { forceRestart: true });
+        }
+
+        function selectAnswer(slug, buttonEl, question) {
+            answers[currentIndex] = slug;
+
+            buttonEl.parentElement.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+            buttonEl.classList.add('selected');
+
+            const nextBtn = document.getElementById('btn-quiz-next');
+            nextBtn.classList.add('ready');
+            nextBtn.disabled = false;
+
+            if (question.type === 'identify') {
+                playAudio(SHAPE_INFO[slug].nameAudio, `answer-${slug}`);
+            }
+        }
+
+        function goBack() {
+            if (currentIndex === 0) return;
+            currentIndex -= 1;
+            render();
+        }
+
+        function goNext() {
+            if (!answers[currentIndex]) return;
+            if (currentIndex === activeQuestions.length - 1) {
+                showResults();
                 return;
             }
-
-            currentQuestion += 1;
-            questionNumberElement.textContent = currentQuestion;
-            createQuestion();
+            currentIndex += 1;
+            render();
         }
 
-        function changeDifficulty(newDifficulty) {
-            difficulty = newDifficulty;
+        function showResults() {
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio = null;
+                activeAudioKey = null;
+            }
 
-            easyButton.classList.toggle(
-                "active",
-                difficulty === "easy"
-            );
+            let score = 0;
+            const list = document.getElementById('results-list');
+            list.innerHTML = activeQuestions.map((question, index) => {
+                const isCorrect = answers[index] === question.shape;
+                if (isCorrect) score += 1;
+                const label = question.type === 'identify'
+                    ? `Question ${index + 1}: ${SHAPE_INFO[question.shape].name}`
+                    : `Question ${index + 1}: ${question.promptText}`;
+                return `
+                    <li class="${isCorrect ? 'correct' : 'incorrect'}">
+                        <span>${label}${isCorrect ? '' : ` — you picked ${SHAPE_INFO[answers[index]]?.name || 'nothing'}`}</span>
+                    </li>
+                `;
+            }).join('');
 
-            hardButton.classList.toggle(
-                "active",
-                difficulty === "hard"
-            );
-
-            score = 0;
-            currentQuestion = 1;
-
-            scoreElement.textContent = score;
-            questionNumberElement.textContent = currentQuestion;
-
-            document.querySelector(".shape-options").style.display =
-                "grid";
-
-            createQuestion();
+            document.getElementById('results-score').textContent = `${score} / ${activeQuestions.length}`;
+            document.getElementById('quiz-question-view').style.display = 'none';
+            document.getElementById('quiz-results-view').style.display = 'block';
         }
 
-        firstShapeCard.addEventListener("click", function () {
-            checkAnswer(firstShapeCard.dataset.shapeName);
+        function changeMode(mode) {
+            if (mode === currentMode) return;
+            document.getElementById('btn-mode-match').classList.toggle('active', mode === 'match');
+            document.getElementById('btn-mode-property').classList.toggle('active', mode === 'property');
+            startQuiz(mode);
+        }
+
+        // Attach layout actions safely
+        document.getElementById('btn-mode-match').addEventListener('click', () => changeMode('match'));
+        document.getElementById('btn-mode-property').addEventListener('click', () => changeMode('property'));
+
+        document.getElementById('btn-quiz-back').addEventListener('click', goBack);
+        document.getElementById('btn-quiz-next').addEventListener('click', goNext);
+        document.getElementById('btn-play-again').addEventListener('click', () => startQuiz(currentMode));
+        document.getElementById('btn-repeat-audio').addEventListener('click', () => {
+            playQuestionAudio(activeQuestions[currentIndex], { forceRestart: true });
         });
 
-        secondShapeCard.addEventListener("click", function () {
-            checkAnswer(secondShapeCard.dataset.shapeName);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderNavbar === 'function') renderNavbar();
+            // Start the quiz dynamically right out of the gate
+            startQuiz('match');
         });
-
-        nextButton.addEventListener("click", nextQuestion);
-
-        easyButton.addEventListener("click", function () {
-            changeDifficulty("easy");
-        });
-
-        hardButton.addEventListener("click", function () {
-            changeDifficulty("hard");
-        });
-
-        createQuestion();
     </script>
 </body>
 </html>
